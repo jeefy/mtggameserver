@@ -1,0 +1,11 @@
+{
+  "name": "mtgServer",
+  "version": "0.0.1",
+  "description": "An http daemon to update files for OBS display",
+  "author": "Jeffrey Sica <jsica@med.umich.edu>",
+  "dependencies": {
+    "express": "*",
+    "body-parser": "*",
+    "multer": "*"
+  }
+}
