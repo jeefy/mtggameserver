@@ -7,6 +7,7 @@
     "express": "*",
     "body-parser": "*",
     "multer": "*",
-    "swig": "*"
+    "swig": "*",
+    "basic-logger": "*"
   }
 }

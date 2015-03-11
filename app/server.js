@@ -2,6 +2,13 @@ var express = require('express')
 var fs      = require('fs')
 var app     = express()
 var swig    = require('swig')
+var Logger  = require('basic-logger')
+
+var customConfig = {
+    showMillis: false,
+    showTimestamp: true
+}
+var log = new Logger(customConfig)
 
 var app = require('express')()
 var bodyParser = require('body-parser')
@@ -37,12 +44,15 @@ app.get('/', function (req, res) {
 app.get('/player/:position/:view?', function(req, res){
   if(req.params.view && req.params.view == "json"){
     res.json(players[req.params.position])
+    log.info('Player ' + req.params.position + ' json')
   } else {
     res.render('player', players[req.params.position])
+    log.info('Player ' + req.params.position + ' card')
   }
 })
 
 app.get('/player/', function(req, res){
+    log.info('Outputting all players')
     res.json(players)
 })
 
@@ -52,11 +62,11 @@ app.post('/', function(req, res) {
         players[req.body.position][i] = req.body[i]
       }
     }
-
+    log.info('Updated player info: ' + req.body);
     res.json(players[req.body.position])
+
     /*fs.writeFile('data/'+req.body.position+'.txt', req.body.life, function (err) {
       if (err) throw err
-      console.log('Updated player '+req.body.position+' life to ' + req.body.life)
       res.json({})
     })*/
 })
@@ -66,6 +76,6 @@ var server = app.listen(9090, function () {
   var host = server.address().address
   var port = server.address().port
 
-  console.log('Example app listening at http://%s:%s', host, port)
+  log.info('Example app listening at http://%s:%s', host, port)
 
 })
