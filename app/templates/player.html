@@ -1,10 +1,24 @@
-<table width="400">
+<link href='http://fonts.googleapis.com/css?family=Josefin+Sans:700italic' rel='stylesheet' type='text/css'>
+<style>
+body, td{ font-family: 'Josefin Sans', sans-serif; color: white;}
+#playerName{  font-size: 14px; }
+#commanderName{ font-size: 12px; }
+#lifeTotal{ font-size: 30px; text-align: right; padding-right: 10px; }
+#colorWheel{ width: 50px;}
+#card{
+     border-radius: 90px 90px 90px 90px;
+     -moz-border-radius: 90px 90px 90px 90px;
+     -webkit-border-radius: 90px 90px 90px 90px;
+     background:black;
+}
+</style>
+<table width="400" id="card">
     <tr>
-        <td rowspan="2">{{color}}</td>
-        <td>{{name}}</td>
-        <td rowspan="2">{{life}}</td>
+        <td id="colorWheel" rowspan="2">Mana</td>
+        <td id="playerName">{{name}}</td>
+        <td id="lifeTotal" rowspan="2">{{life}}</td>
     </tr>
     <tr>
-        <td>{{commander}}</td>
+        <td id="commanderName">{{commander}}</td>
     </tr>
 </table>
