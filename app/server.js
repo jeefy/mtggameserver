@@ -52,8 +52,26 @@ app.get('/player/:position/:view?', function(req, res){
 })
 
 app.get('/player/', function(req, res){
-    log.info('Outputting all players')
+    log.info('Outputting all player info')
     res.json(players)
+})
+
+app.post('leave/:position', function(req, res){
+  var newPlayerObject = {}
+  for(i in players){
+    if(req.params.position != i){
+      newPlayerObject[i] = players[i]
+    }
+  }
+  players = newPlayerObject
+  res.json(players)
+  log.info('Player ' + req.params.position + ' has left the game!')
+})
+
+app.post('/reset', function(req, res) {
+  players = {}
+  log.info('Game has been reset!');
+  res.json(players);
 })
 
 app.post('/', function(req, res) {
@@ -62,7 +80,7 @@ app.post('/', function(req, res) {
         players[req.body.position][i] = req.body[i]
       }
     }
-    log.info('Updated player info: ' + req.body);
+    log.info('Updated player info: ' + req.body)
     res.json(players[req.body.position])
 
     /*fs.writeFile('data/'+req.body.position+'.txt', req.body.life, function (err) {
