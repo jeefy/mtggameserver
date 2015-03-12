@@ -34,7 +34,7 @@ app.get('/', function (req, res) {
 app.use('/static', express.static(__dirname + '/static'))
 
 app.get('/player/:position/:view?', function(req, res){
-  var position = req.params.position;
+  var position = req.params.position
   if(position in players){
     var player = players[req.params.position]
   } else {
@@ -60,8 +60,7 @@ app.get('/game', function(req, res){
   res.render('game')
 })
 
-app.post('/', function(req, res) {
-    //http://api.mtgapi.com/v2/cards?name=Krenko,%20Mob%20Boss
+app.get('/update', function(req, res) {
     var reqObject = req.query
     var position  = reqObject.position
 
@@ -81,8 +80,13 @@ app.post('/', function(req, res) {
           var commander = commanderInfo.cards[0]
           players[position]['commanderInfo']['multiverseId'] = commander.multiverseid
           players[position]['commanderInfo']['image'] = commander.images.gatherer
-          players[position]['commanderInfo']['colors'] = commander.colors
-          players[position]['commanderInfo']['manaIcon'] = commander.colors.sort().join('').toLowerCase() + '.png'
+          if(commander.colors != null){
+            players[position]['commanderInfo']['colors'] = commander.colors
+            players[position]['commanderInfo']['manaIcon'] = commander.colors.sort().join('').toLowerCase() + '.png'
+          } else {
+            players[position]['commanderInfo']['colors'] = ["Colorless"]
+            players[position]['commanderInfo']['manaIcon'] = 'none.png'
+          }
         }
       }
       players[position][i] = reqObject[i]
@@ -93,7 +97,7 @@ app.post('/', function(req, res) {
     io.sockets.emit('players', players)
 })
 
-app.post('/leave/:position', function(req, res){
+app.get('/leave/:position', function(req, res){
   var newPlayerObject = {}
   for(i in players){
     if(req.params.position != players[i].position){
@@ -106,11 +110,15 @@ app.post('/leave/:position', function(req, res){
   log.info('Player ' + req.params.position + ' has left the game!')
 })
 
-app.post('/reset', function(req, res) {
+app.get('/reset', function(req, res) {
   players = {}
   log.info('Game has been reset!')
   res.json(players)
   io.sockets.emit('players', players)
+})
+
+app.get('/nfc', function(req, res){
+  
 })
 
 
