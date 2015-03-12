@@ -9,12 +9,12 @@
 * Get wrecked by your friends because your deck sucks
 
 ##Routes?
-| Method  | URI  | Effect  | 
-|---|---|---|
-| GET  | /player  | Returns all players in JSON  |
-| GET  | /player:position  | Returns player nametag  |
-| GET  | /player:position/json  | Returns player-specific JSON  |
-| GET  | /game  | Returns game monitor page (Card popups)  |
-| POST  | /player  | Updates player information |
-| POST  | /reset  | Clears all player information  |
-| POST  | /leave/:position  | Clears player information for specified position  |
+| Method  | URI  | Effect  | Example |
+|---|---|---|---|
+| GET  | /player  | Returns all players in JSON  | /player |
+| GET  | /player:position  | Returns player nametag  | /player/1 |
+| GET  | /player:position/json  | Returns player-specific JSON  | /player/1/json |
+| GET  | /game  | Returns game monitor page (Card popups)  | /game |
+| GET  | /update  | Updates player information | /update?position=1&name=jeef111x&commander=Sen Triplets&life=40 |
+| GET  | /reset  | Clears all player information  | /reset |
+| GET  | /leave/:position  | Clears player information for specified position  | /leave/1 |
