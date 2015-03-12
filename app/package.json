@@ -7,7 +7,9 @@
     "express": "*",
     "body-parser": "*",
     "multer": "*",
+    "sync-request": "*",
     "swig": "*",
-    "basic-logger": "*"
+    "basic-logger": "*",
+    "socket.io": "*"
   }
 }
