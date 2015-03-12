@@ -25,7 +25,11 @@ function getCardInfo(card){
   var url = 'http://api.mtgapi.com/v2/cards?name=' + card
   var mtgResponse = JSON.parse(http_req('GET', url).getBody())
   if(mtgResponse.cards != null){
-    return mtgResponse.cards[0]
+    for(i in mtgResponse.cards){
+      if(mtgResponse.cards[i].multiverseid > 0){
+        return mtgResponse.cards[i]
+      }
+    }
   } else {
     return false;
   }
@@ -91,7 +95,7 @@ app.get('/update', function(req, res) {
         var commander     = getCardInfo(commanderName);
         if(commander){
           players[position]['commanderInfo']['multiverseId'] = commander.multiverseid
-          players[position]['commanderInfo']['image'] = commander.images.gatherer
+          players[position]['commanderInfo']['image'] = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + commander.multiverseid + '&type=card'
           if(commander.colors != null){
             players[position]['commanderInfo']['colors'] = commander.colors
             players[position]['commanderInfo']['manaIcon'] = commander.colors.sort().join('').toLowerCase() + '.png'
@@ -165,10 +169,19 @@ app.get('/nfc', function(req, res){
 });
 
 app.get('/card', function(req, res){
-  console.log(req.query.card)
-  var card = getCardInfo(req.query.card)
-  res.json(card)
-  io.sockets.emit('card', card)
+  if(req.query.card){
+    console.log(req.query.card)
+    var card = getCardInfo(req.query.card)
+    res.json(card)
+    io.sockets.emit('card', card)
+  } else if (req.query.multiverseid){
+    io.sockets.emit('card', {'multiverseid':req.query.multiverseid})
+    res.json({'multiverseid':req.query.multiverseid})
+  }
+})
+app.get('/message', function(req, res){
+  io.sockets.emit('message', {'message':req.query.message})
+  res.json({'message':req.query.message})
 })
 
 app.get('/card/entry', function(req, res){

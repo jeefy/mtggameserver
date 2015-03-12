@@ -18,6 +18,11 @@
           <input class="typeahead" type="text" name="card" placeholder="Thoughtseize" value="" />
         </div>
       </form>
+      <h3>On-Screen Message</h3>
+      <form action="/message/">
+        <input class="typeahead tt-input" id="message" type="text" name="message" placeholder="Coffee BRB 5min" value="" />
+        <p>Current Message: <span id="currentMessage"></span></p>
+      </form>
       <img src="" id="card" />
     </div>
 
@@ -26,6 +31,11 @@
     <script src="https://twitter.github.io/typeahead.js/js/handlebars.js"></script>
     <script type="text/javascript">
     $(document).ready(function(){
+      $('#message').blur(function(){
+        $.getJSON('/message', {'message':$(this).val()}, function(data){
+          $('#currentMessage').html(data.message);
+        });
+      });
       var engine = new Bloodhound({
         remote: 'https://api.deckbrew.com/mtg/cards/typeahead?q=%QUERY',
         datumTokenizer: function(d) {
@@ -47,8 +57,18 @@
           ].join('\n')
         }
       }).bind('typeahead:selected typeahead:autocompleted', function(obj, datum, name){
-        $.getJSON('/card', {card: datum.name}, function(data){
-          $('#card').fadeOut().prop('src', data.images.gatherer).fadeIn().delay(10000).fadeOut();
+        var multiverseid = 0;
+        for(i in datum.editions){
+          if(datum.editions[i].multiverse_id > 0){
+            multiverseid = datum.editions[i].multiverse_id;
+          }
+        }
+        $.getJSON('/card', {multiverseid: multiverseid}, function(data){
+          console.log(data);
+          $('#card').fadeOut(function(){
+            $('#card').prop('src', 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid='+data.multiverseid+'&type=card');
+            $('#card').fadeIn().delay(10000).fadeOut().delay(500);
+          });
         });
       });
     });
