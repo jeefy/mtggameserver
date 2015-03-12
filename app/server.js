@@ -13,9 +13,23 @@ var bodyParser = require('body-parser')
 var multer     = require('multer')
 var swig       = require('swig')
 var http_req   = require('sync-request')
+var sqlite3    = require('sqlite3').verbose();
+var db         = new sqlite3.Database('mtg.db');
 
+db.run("CREATE TABLE if not exists nfc(tag TEXT, data TEXT, action TEXT)")
+db.run("CREATE TABLE if not exists log(position NUM, life NUM, name TEXT, commander TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)")
 
 var players    = {}
+
+function getCardInfo(card){
+  var url = 'http://api.mtgapi.com/v2/cards?name=' + card
+  var mtgResponse = JSON.parse(http_req('GET', url).getBody())
+  if(mtgResponse.cards != null){
+    return mtgResponse.cards[0]
+  } else {
+    return false;
+  }
+}
 
 app.use(bodyParser.json()) 
 
@@ -28,7 +42,7 @@ app.set('view cache', false)
 swig.setDefaults({ cache: false })
 
 app.get('/', function (req, res) {
-  res.send('<h1>BY AJANI\'S WHISKER!</h1>You shouldn\'t be here.')
+  res.send('<h1>BY AJANI\'S WHISKER!</h1><p>You shouldn\'t be here.</p><p>Go play with <a href="/card/entry">Card Entry</a>.')
 })
 
 app.use('/static', express.static(__dirname + '/static'))
@@ -38,7 +52,7 @@ app.get('/player/:position/:view?', function(req, res){
   if(position in players){
     var player = players[req.params.position]
   } else {
-    var player = {'position': position, 'blank': true}
+    var player = {'position': position, 'blank': true, commander: {'manaIcon': 'none.png'}}
   }
 
   if(req.params.view && req.params.view == "json"){
@@ -74,10 +88,8 @@ app.get('/update', function(req, res) {
       if(i == 'commander' && reqObject[i] != players[position][i]){
         players[position]['commanderInfo'] = {}
         var commanderName = reqObject[i].replace(' ', '%20')
-        var url = 'http://api.mtgapi.com/v2/cards?name=' + commanderName
-        var commanderInfo = JSON.parse(http_req('GET', url).getBody())
-        if(commanderInfo.cards != null){
-          var commander = commanderInfo.cards[0]
+        var commander     = getCardInfo(commanderName);
+        if(commander){
           players[position]['commanderInfo']['multiverseId'] = commander.multiverseid
           players[position]['commanderInfo']['image'] = commander.images.gatherer
           if(commander.colors != null){
@@ -90,11 +102,29 @@ app.get('/update', function(req, res) {
         }
       }
       players[position][i] = reqObject[i]
+
     }
 
     log.info('Updated player info for ' + position + ': ' + reqObject)
-    res.json(players[reqObject.position])
+    res.json(players[position])
     io.sockets.emit('players', players)
+    if(players[position] != null){
+      player = players[position]
+    } else {
+      player = {
+        'position':position,
+        'life':null,
+        'name':null,
+        'commander':null
+      }
+    }
+    db.run("INSERT INTO log(position, life, name, commander) VALUES (?,?,?,?)",
+      position,
+      player.life,
+      player.name,
+      player.commander
+    )
+
 })
 
 app.get('/leave/:position', function(req, res){
@@ -118,7 +148,31 @@ app.get('/reset', function(req, res) {
 })
 
 app.get('/nfc', function(req, res){
-  
+  console.log(req.query);
+  res.json(req.query);
+   db.each("SELECT * from nfc where tag=?", req.query.tag, function(err, row) {
+      if(row.action == "card"){
+        var card = getCardInfo(row.data)
+        res.json(card)
+        io.sockets.emit('card', card)
+      } else if(row.action == "position") {
+        res.json(row)
+      } else {
+        res.json(req.query)
+        console.log('nfc wut?')
+      }
+  });
+});
+
+app.get('/card', function(req, res){
+  console.log(req.query.card)
+  var card = getCardInfo(req.query.card)
+  res.json(card)
+  io.sockets.emit('card', card)
+})
+
+app.get('/card/entry', function(req, res){
+  res.render('card')
 })
 
 

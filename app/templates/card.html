@@ -1,0 +1,57 @@
+<html>
+  <head> 
+    <title>Card Lookup</title>
+    <link href="https://twitter.github.io/typeahead.js/css/examples.css" rel="stylesheet" type="text/css" />
+    <style>
+    #mtg .empty-message {
+      padding: 5px 10px;
+      text-align: center;
+      #card{ display: none;}
+    }
+    </style>
+  </head>
+  <body>
+    <div align="center">
+      <h3>On-Screen Card Manager</h3>
+      <form action="/card/">
+        <div id="mtg">
+          <input class="typeahead" type="text" name="card" placeholder="Thoughtseize" value="" />
+        </div>
+      </form>
+      <img src="" id="card" />
+    </div>
+
+    <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+    <script src="https://twitter.github.io/typeahead.js/releases/latest/typeahead.bundle.js"></script>
+    <script src="https://twitter.github.io/typeahead.js/js/handlebars.js"></script>
+    <script type="text/javascript">
+    $(document).ready(function(){
+      var engine = new Bloodhound({
+        remote: 'https://api.deckbrew.com/mtg/cards/typeahead?q=%QUERY',
+        datumTokenizer: function(d) {
+          return Bloodhound.tokenizers.whitespace(d.val);
+        },
+        queryTokenizer: Bloodhound.tokenizers.whitespace
+      });
+      engine.initialize();
+
+      $('#mtg .typeahead').typeahead(null, {
+        name: 'mtg',
+        displayKey: 'name',
+        source: engine.ttAdapter(),
+        templates: {
+          empty: [
+            '<div class="empty-message">',
+            'Unable to find any Card that match the current query',
+            '</div>'
+          ].join('\n')
+        }
+      }).bind('typeahead:selected typeahead:autocompleted', function(obj, datum, name){
+        $.getJSON('/card', {card: datum.name}, function(data){
+          $('#card').fadeOut().prop('src', data.images.gatherer).fadeIn().delay(10000).fadeOut();
+        });
+      });
+    });
+    </script>
+  </body>
+</html>

@@ -10,6 +10,7 @@
     "sync-request": "*",
     "swig": "*",
     "basic-logger": "*",
-    "socket.io": "*"
+    "socket.io": "*",
+    "sqlite3": "*"
   }
 }
