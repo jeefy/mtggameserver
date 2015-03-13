@@ -3,6 +3,13 @@
 <script src="http://aishek.github.io/jquery-animateNumber/javascripts/jquery.animateNumber.js"></script>
 <script>
   var socket = io.connect();
+  socket.on('active', function(data){
+    if(data['position'] == "{{position}}"){
+      $('td').css('color', '#fff000');
+    } else {
+      $('td').css('color', '');
+    }
+  });
   socket.on('players', function (data) {
     if('{{position}}' in data){
         var player = data[{{position}}];
@@ -46,7 +53,7 @@
 body, td{ font-family: 'Josefin Sans', sans-serif; color: white;}
 body{background-color: #00ff00;}
 #playerName{  font-size: 16px; }
-#commanderName{ font-size: 12px;}
+#commanderName{ font-size: 12px; text-transform: capitalize;}
 #lifeTotal{ font-size: 30px; text-align: right; padding-right: 10px; }
 #colorWheel{ width: 50px;}
 #card{
@@ -54,10 +61,17 @@ body{background-color: #00ff00;}
      -moz-border-radius: 90px 90px 90px 90px;
      -webkit-border-radius: 90px 90px 90px 90px;
      background:black;
-    {% if rotate %}
+    {% if rotate == "1" %}
      -ms-transform: rotate(90deg); /* IE 9 */
      -webkit-transform: rotate(90deg); /* Chrome, Safari, Opera */
      transform: rotate(90deg);
+     margin-top: 200px;
+     margin-left: -100px;
+    {% endif %}
+    {% if rotate == "2" %}
+     -ms-transform: rotate(270deg); /* IE 9 */
+     -webkit-transform: rotate(270deg); /* Chrome, Safari, Opera */
+     transform: rotate(270deg);
      margin-top: 200px;
      margin-left: -100px;
     {% endif %}
@@ -84,6 +98,9 @@ $(document).ready(function(){
   $('#lifeTotal').prop('number', {{life|default('0')}});
   {% if blank %}
   $('#card').hide();
+  {% endif %}
+  {% if active == position %}
+  $('td').css('color', '#fff000');
   {% endif %}
 });
 </script>

@@ -17,9 +17,11 @@ var sqlite3    = require('sqlite3').verbose();
 var db         = new sqlite3.Database('mtg.db');
 
 db.run("CREATE TABLE if not exists nfc(tag TEXT, data TEXT, action TEXT)")
-db.run("CREATE TABLE if not exists log(position NUM, life NUM, name TEXT, commander TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)")
+db.run("CREATE TABLE if not exists log(position NUM, life NUM, name TEXT, commander TEXT, active NUM, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)")
+db.run("CREATE TABLE if not exists turn_log(position NUM, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)")
 
 var players    = {}
+var active     = 0;
 
 function getCardInfo(card){
   var url = 'http://api.mtgapi.com/v2/cards?name=' + card
@@ -64,8 +66,9 @@ app.get('/player/:position/:view?', function(req, res){
     log.info('Player ' + req.params.position + ' json')
   } else {
     if(req.query.rotate){
-      player['rotate'] = true
+      player['rotate'] = req.query.rotate
     }
+    player['active'] = active;
     res.render('player', player)
     log.info('Player ' + req.params.position + ' card')
   }
@@ -123,7 +126,8 @@ app.get('/update', function(req, res) {
         'position':position,
         'life':null,
         'name':null,
-        'commander':null
+        'commander':null,
+        'active':null
       }
     }
     db.run("INSERT INTO log(position, life, name, commander) VALUES (?,?,?,?)",
@@ -142,6 +146,9 @@ app.get('/leave/:position', function(req, res){
       newPlayerObject[i] = players[i]
     }
   }
+  if(req.params.position == active){
+    active = 0
+  }
   players = newPlayerObject
   res.json(players)
   io.sockets.emit('players', players)
@@ -150,6 +157,7 @@ app.get('/leave/:position', function(req, res){
 
 app.get('/reset', function(req, res) {
   players = {}
+  active  = 0
   log.info('Game has been reset!')
   res.json(players)
   io.sockets.emit('players', players)
@@ -188,7 +196,22 @@ app.get('/message', function(req, res){
   res.json({'message':req.query.message})
 })
 
-app.get('/card/entry', function(req, res){
+app.get('/active/update', function(req, res){
+  console.log('Active!')
+  console.log(req.query)
+  active = req.query.position
+  io.sockets.emit('active', {'position':req.query.position})
+  res.json({'position':req.query.position})
+  db.run("INSERT INTO turn_log(position) VALUES (?)",
+    req.query.position
+  )
+})
+
+app.get('/active', function(req, res){
+  res.json({'position':active})
+})
+
+app.get('/manage', function(req, res){
   res.render('card')
 })
 
