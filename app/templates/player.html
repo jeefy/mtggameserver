@@ -6,7 +6,8 @@
   socket.on('players', function (data) {
     if('{{position}}' in data){
         var player = data[{{position}}];
-
+        /*console.log(player.name);
+        console.log($('#playerName').text());*/
         if(player.name != $('#playerName').text()){
           $('#playerName').fadeOut(function(){
             $('#playerName')
@@ -45,7 +46,7 @@
 body, td{ font-family: 'Josefin Sans', sans-serif; color: white;}
 body{background-color: #00ff00;}
 #playerName{  font-size: 16px; }
-#commanderName{ font-size: 12px; text-transform: capitalize;}
+#commanderName{ font-size: 12px;}
 #lifeTotal{ font-size: 30px; text-align: right; padding-right: 10px; }
 #colorWheel{ width: 50px;}
 #card{
@@ -53,6 +54,13 @@ body{background-color: #00ff00;}
      -moz-border-radius: 90px 90px 90px 90px;
      -webkit-border-radius: 90px 90px 90px 90px;
      background:black;
+    {% if rotate %}
+     -ms-transform: rotate(90deg); /* IE 9 */
+     -webkit-transform: rotate(90deg); /* Chrome, Safari, Opera */
+     transform: rotate(90deg);
+     margin-top: 200px;
+     margin-left: -100px;
+    {% endif %}
 }
 </style>
 <table width="400" id="card">

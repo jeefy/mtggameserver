@@ -63,6 +63,9 @@ app.get('/player/:position/:view?', function(req, res){
     res.json(player)
     log.info('Player ' + req.params.position + ' json')
   } else {
+    if(req.query.rotate){
+      player['rotate'] = true
+    }
     res.render('player', player)
     log.info('Player ' + req.params.position + ' card')
   }
@@ -91,8 +94,9 @@ app.get('/update', function(req, res) {
 
       if(i == 'commander' && reqObject[i] != players[position][i]){
         players[position]['commanderInfo'] = {}
+        players[position]['commander'] = reqObject[i]
         var commanderName = reqObject[i].replace(' ', '%20')
-        var commander     = getCardInfo(commanderName);
+        var commander     = getCardInfo(commanderName)
         if(commander){
           players[position]['commanderInfo']['multiverseId'] = commander.multiverseid
           players[position]['commanderInfo']['image'] = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + commander.multiverseid + '&type=card'
