@@ -3,10 +3,15 @@
 <script>
   var socket = io.connect();
   socket.on('card', function (data) {
-    $('#card').fadeOut(function(){
-        $('#card').prop('src', 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid='+data.multiverseid+'&type=card');
-        $('#card').fadeIn().delay(10000).fadeOut().delay(500);
-    });
+    if(data.action == "show"){
+      $('#card').fadeOut(function(){
+        $('#card').prop('src', 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid='+data.multiverseid+'&type=card').fadeIn();
+      });  
+    }
+    if(data.action == "hide"){
+      $('#card').fadeOut();
+    }
+    
   });
   socket.on('message', function(data){
     $('#message').html(data.message);
@@ -31,3 +36,14 @@ body{background-color: #00ff00;}
 </style>
 <h3 id="message"></h3>
 <img width="400" src="" id="card" />
+
+<script>
+$(document).ready(function(){
+  {% if message != "" %}
+    $('#message').html('{{message}}');
+  {% endif %}
+  {% if card != "" %}
+    $('#card').prop('src', 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid={{card.multiverseid}}&type=card').fadeIn();
+  {% endif %}
+});
+</script>

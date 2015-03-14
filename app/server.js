@@ -13,15 +13,17 @@ var bodyParser = require('body-parser')
 var multer     = require('multer')
 var swig       = require('swig')
 var http_req   = require('sync-request')
-var sqlite3    = require('sqlite3').verbose();
-var db         = new sqlite3.Database('mtg.db');
+var sqlite3    = require('sqlite3').verbose()
+var db         = new sqlite3.Database('mtg.db')
 
 db.run("CREATE TABLE if not exists nfc(tag TEXT, data TEXT, action TEXT)")
 db.run("CREATE TABLE if not exists log(position NUM, life NUM, name TEXT, commander TEXT, active NUM, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)")
 db.run("CREATE TABLE if not exists turn_log(position NUM, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)")
 
 var players    = {}
-var active     = 0;
+var active     = 0
+var cardScreen = ""
+var msgScreen  = ""
 
 function getCardInfo(card){
   var url = 'http://api.mtgapi.com/v2/cards?name=' + card
@@ -33,7 +35,7 @@ function getCardInfo(card){
       }
     }
   } else {
-    return false;
+    return false
   }
 }
 
@@ -61,13 +63,15 @@ app.get('/', function (req, res) {
 })
 
 app.get('/manage', function(req, res){
+  var state = {'message':msgScreen, 'card':cardScreen}
   log.info('Viewing game manager')
-  res.render('manage')
+  res.render('manage', state)
 })
 
 app.get('/game', function(req, res){
+  var state = {'message':msgScreen, 'card':cardScreen}
   log.info('Viewing game state')
-  res.render('game')
+  res.render('game', state)
 })
 
 /*
@@ -93,7 +97,7 @@ app.get('/player/:position/:view?', function(req, res){
     if(req.query.rotate){
       player['rotate'] = req.query.rotate
     }
-    player['active'] = active;
+    player['active'] = active
     res.render('player', player)
     log.info('Player ' + req.params.position + ' card')
   }
@@ -200,8 +204,8 @@ app.get('/reset', function(req, res) {
 
 //Look up NFC chip in database, do action based on entry
 app.get('/nfc', function(req, res){
-  console.log(req.query);
-  res.json(req.query);
+  console.log(req.query)
+  res.json(req.query)
    db.each("SELECT * from nfc where tag=?", req.query.tag, function(err, row) {
       if(row.action == "card"){
         var card = getCardInfo(row.data)
@@ -215,8 +219,8 @@ app.get('/nfc', function(req, res){
         res.json(req.query)
         console.log('nfc wut?')
       }
-  });
-});
+  })
+})
 
 //Look up card based on Name or multiverseid
 //Send card event 
@@ -224,11 +228,17 @@ app.get('/card', function(req, res){
   if(req.query.card){
     console.log(req.query.card)
     var card = getCardInfo(req.query.card)
-    res.json(card)
-    io.sockets.emit('card', card)
+    res.json({'card':card, 'action':'show'})
+    io.sockets.emit('card', {'card':card, 'action':'show'})
+    cardScreen = {'card':card, 'action':'show'}
   } else if (req.query.multiverseid){
-    io.sockets.emit('card', {'multiverseid':req.query.multiverseid})
-    res.json({'multiverseid':req.query.multiverseid})
+    io.sockets.emit('card', {'multiverseid':req.query.multiverseid, 'action':'show'})
+    res.json({'multiverseid':req.query.multiverseid, 'action':'show'})
+    cardScreen = {'multiverseid':req.query.multiverseid, 'action':'show'}
+  } else {
+    io.sockets.emit('card', {'action':'hide'})
+    res.json({'action':'hide'})
+    cardScreen = ""
   }
 })
 
@@ -236,6 +246,7 @@ app.get('/card', function(req, res){
 app.get('/message', function(req, res){
   io.sockets.emit('message', {'message':req.query.message})
   res.json({'message':req.query.message})
+  msgScreen = req.query.message
 })
 
 //Send active player event
