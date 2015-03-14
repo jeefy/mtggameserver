@@ -6,8 +6,9 @@
     #mtg .empty-message {
       padding: 5px 10px;
       text-align: center;
-      #card{ display: none;}
     }
+    #card{ display: none;}
+    #randomPlayerName{text-size: 36px; display: none; font-weight: bold;}
     #cardActions{display: none;}
     .btn{
        -webkit-appearance: none; -moz-appearance: none;
@@ -26,6 +27,8 @@
   <body>
     <div align="center">
       <input type="button" class="btn" id="reset" value="Reset Game" />
+      <input type="button" class="btn" id="randomPlayer" value="Random Player" />
+      <div id="randomPlayerName"></div>
       <table>
         <tr>
           <td valign="top">
@@ -116,6 +119,11 @@
         if(confirm("You sure you want reset?")){
           $.getJSON('/reset', function(){ });
         }
+      });
+      $('#randomPlayer').click(function(){
+        $.getJSON('/random', function(data){
+          $('#randomPlayerName').text(data.name).fadeIn().delay(10000).fadeOut();
+        })
       });
       {% if message != "" %}
         $('#currentMessage').html('{{message}}');

@@ -16,13 +16,18 @@
   socket.on('message', function(data){
     $('#message').html(data.message);
   });
+  socket.on('gameMessage', function(data){
+    $('#gameMessage').fadeOut(function(){
+      $('#gameMessage').text(data.message).fadeIn().delay(10000).fadeOut();
+    });
+  });
 </script>
 <link href='http://fonts.googleapis.com/css?family=Josefin+Sans:700italic' rel='stylesheet' type='text/css'>
 <style>
 body, td{ font-family: 'Josefin Sans', sans-serif; color: white;}
 body{background-color: #00ff00;}
 #card{display: none;}
-#message{
+#message, #gameMessage{
     -webkit-text-stroke: 1px black;
    color: white;
    font-size: 48px;
@@ -34,6 +39,7 @@ body{background-color: #00ff00;}
     1px 1px 0 #000;
 }
 </style>
+<h3 id="gameMessage"></h3>
 <h3 id="message"></h3>
 <img width="400" src="" id="card" />
 

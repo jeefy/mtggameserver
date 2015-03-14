@@ -114,6 +114,19 @@ app.get('/active', function(req, res){
   res.json({'position':active})
 })
 
+//View random player
+app.get('/random', function(req, res){
+  var random = false;
+  while(random == false){
+    var player = Math.floor(Math.random() * 6) + 1
+    if(player in players){
+      random = true
+    }
+  }
+  io.sockets.emit('gameMessage', {'message': players[player].name})
+  res.json(players[player])
+})
+
 /*
   
   Write / Event calls
