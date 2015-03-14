@@ -62,7 +62,7 @@ app.get('/', function (req, res) {
 
 app.get('/manage', function(req, res){
   log.info('Viewing game manager')
-  res.render('card')
+  res.render('manage')
 })
 
 app.get('/game', function(req, res){
