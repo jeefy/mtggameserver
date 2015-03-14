@@ -47,12 +47,37 @@ app.set('views', __dirname + '/templates')
 app.set('view cache', false)
 swig.setDefaults({ cache: false })
 
-app.get('/', function (req, res) {
-  res.send('<h1>BY AJANI\'S WHISKER!</h1><p>You shouldn\'t be here.</p><p>Go play with <a href="/card/entry">Card Entry</a>.')
-})
+/*
+
+  Template routes / Static
+  
+*/
 
 app.use('/static', express.static(__dirname + '/static'))
 
+app.get('/', function (req, res) {
+  log.info('Viewing index')
+  res.render('index')
+})
+
+app.get('/manage', function(req, res){
+  log.info('Viewing game manager')
+  res.render('card')
+})
+
+app.get('/game', function(req, res){
+  log.info('Viewing game state')
+  res.render('game')
+})
+
+/*
+
+  Read Calls
+
+*/
+
+
+// View Player JSON or Player Nametag
 app.get('/player/:position/:view?', function(req, res){
   var position = req.params.position
   if(position in players){
@@ -74,16 +99,24 @@ app.get('/player/:position/:view?', function(req, res){
   }
 })
 
+//View all player JSON
 app.get('/player/', function(req, res){
     log.info('Outputting all player info')
     res.json(players)
 })
 
-app.get('/game', function(req, res){
-  log.info('Viewing game state')
-  res.render('game')
+//View active player
+app.get('/active', function(req, res){
+  res.json({'position':active})
 })
 
+/*
+  
+  Write / Event calls
+
+*/
+
+//Update player state
 app.get('/update', function(req, res) {
     var reqObject = req.query
     var position  = reqObject.position
@@ -139,6 +172,7 @@ app.get('/update', function(req, res) {
 
 })
 
+//Player leaves action
 app.get('/leave/:position', function(req, res){
   var newPlayerObject = {}
   for(i in players){
@@ -155,6 +189,7 @@ app.get('/leave/:position', function(req, res){
   log.info('Player ' + req.params.position + ' has left the game!')
 })
 
+//Reset entire gamestate (players, active)
 app.get('/reset', function(req, res) {
   players = {}
   active  = 0
@@ -163,6 +198,7 @@ app.get('/reset', function(req, res) {
   io.sockets.emit('players', players)
 })
 
+//Look up NFC chip in database, do action based on entry
 app.get('/nfc', function(req, res){
   console.log(req.query);
   res.json(req.query);
@@ -171,6 +207,8 @@ app.get('/nfc', function(req, res){
         var card = getCardInfo(row.data)
         res.json(card)
         io.sockets.emit('card', card)
+      } else if(row.action == "active") {
+        res.json(row)
       } else if(row.action == "position") {
         res.json(row)
       } else {
@@ -180,6 +218,8 @@ app.get('/nfc', function(req, res){
   });
 });
 
+//Look up card based on Name or multiverseid
+//Send card event 
 app.get('/card', function(req, res){
   if(req.query.card){
     console.log(req.query.card)
@@ -191,11 +231,15 @@ app.get('/card', function(req, res){
     res.json({'multiverseid':req.query.multiverseid})
   }
 })
+
+//Send on screen message event
 app.get('/message', function(req, res){
   io.sockets.emit('message', {'message':req.query.message})
   res.json({'message':req.query.message})
 })
 
+//Send active player event
+//Update db with active player
 app.get('/active/update', function(req, res){
   console.log('Active!')
   console.log(req.query)
@@ -207,15 +251,13 @@ app.get('/active/update', function(req, res){
   )
 })
 
-app.get('/active', function(req, res){
-  res.json({'position':active})
-})
+/*
 
-app.get('/manage', function(req, res){
-  res.render('card')
-})
+  Websocket event handlers
 
+*/
 
+//Initial event, does nothing
 io.on('connection', function (socket) {
   socket.emit('yay', { hello: 'world' })
   socket.on('my other event', function (data) {
