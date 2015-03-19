@@ -12,32 +12,30 @@ var io         = require('socket.io')(server)
 var bodyParser = require('body-parser')
 var multer     = require('multer')
 var swig       = require('swig')
-var http_req   = require('sync-request')
 var sqlite3    = require('sqlite3').verbose()
 var db         = new sqlite3.Database('mtg.db')
 
 db.run("CREATE TABLE if not exists nfc(tag TEXT, data TEXT, action TEXT)")
 db.run("CREATE TABLE if not exists log(position NUM, life NUM, name TEXT, commander TEXT, active NUM, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)")
 db.run("CREATE TABLE if not exists turn_log(position NUM, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)")
+db.run("CREATE UNIQUE INDEX IF NOT EXISTS nfc_tag_idx on nfc(tag)")
 
-var players    = {}
-var active     = 0
-var cardScreen = ""
-var msgScreen  = ""
 
-function getCardInfo(card){
-  var url = 'http://api.mtgapi.com/v2/cards?name=' + card
-  var mtgResponse = JSON.parse(http_req('GET', url).getBody())
-  if(mtgResponse.cards != null){
-    for(i in mtgResponse.cards){
-      if(mtgResponse.cards[i].multiverseid > 0){
-        return mtgResponse.cards[i]
-      }
-    }
-  } else {
-    return false
-  }
-}
+app.set('logger', log)
+app.set('state', {
+  players: {},
+  active: 0,
+  cardScreen: "",
+  msgScreen: "",
+  db: db,
+  io: io
+})
+
+var game       = require('./routes/game')
+var card       = require('./routes/card')
+var player     = require('./routes/player')
+var nfc        = require('./routes/nfc')
+var gameSocket = require('./routes/socket')
 
 app.use(bodyParser.json()) 
 
@@ -51,243 +49,41 @@ swig.setDefaults({ cache: false })
 
 /*
 
-  Template routes / Static
+  Express events
   
 */
 
 app.use('/static', express.static(__dirname + '/static'))
 
-app.get('/', function (req, res) {
-  log.info('Viewing index')
-  res.render('index')
-})
+app.get('/', game.index) // By Ajani's Whisker!
+app.get('/game', game.game) // Stream game view
+app.get('/game/manage', game.manage) // Game manager form
+app.get('/game/reset', game.reset) // Resets current game state
+app.get('/game/message', game.message) // Updates on screen message
+app.get('/game/nfc', game.nfc) // Updates on screen message
 
-app.get('/manage', function(req, res){
-  var state = {'message':msgScreen, 'card':cardScreen}
-  log.info('Viewing game manager')
-  res.render('manage', state)
-})
-
-app.get('/game', function(req, res){
-  var state = {'message':msgScreen, 'card':cardScreen}
-  log.info('Viewing game state')
-  res.render('game', state)
-})
-
-/*
-
-  Read Calls
-
-*/
+app.get('/player/', player.index) // Return all players
+app.get('/player/get/:position/:view?', player.get) // Return specific player (json or card)
+app.get('/player/active/:action', player.active) // Look up or update active
+app.get('/player/leave/:position', player.leave) // Leave 
+app.get('/player/random', player.random) // Get Random player
+app.get('/player/update', player.update) // Update player info
 
 
-// View Player JSON or Player Nametag
-app.get('/player/:position/:view?', function(req, res){
-  var position = req.params.position
-  if(position in players){
-    var player = players[req.params.position]
-  } else {
-    var player = {'position': position, 'blank': true, commander: {'manaIcon': 'none.png'}}
-  }
+app.get('/nfc/read', nfc.read) // Performs action based on NFC card read
+app.get('/nfc/entry', nfc.entry) // Sends card ID to entry form
+app.get('/nfc/write', nfc.write) // Updates NFC table with info
+app.get('/nfc/lookup', nfc.lookup) // Just looks up in db
 
-  if(req.params.view && req.params.view == "json"){
-    res.json(player)
-    log.info('Player ' + req.params.position + ' json')
-  } else {
-    if(req.query.rotate){
-      player['rotate'] = req.query.rotate
-    }
-    player['active'] = active
-    res.render('player', player)
-    log.info('Player ' + req.params.position + ' card')
-  }
-})
-
-//View all player JSON
-app.get('/player/', function(req, res){
-    log.info('Outputting all player info')
-    res.json(players)
-})
-
-//View active player
-app.get('/active', function(req, res){
-  res.json({'position':active})
-})
-
-//View random player
-app.get('/random', function(req, res){
-  var random = false;
-  while(random == false){
-    var player = Math.floor(Math.random() * 6) + 1
-    if(player in players){
-      random = true
-    }
-  }
-  io.sockets.emit('gameMessage', {'message': players[player].name})
-  res.json(players[player])
-})
-
-/*
-  
-  Write / Event calls
-
-*/
-
-//Update player state
-app.get('/update', function(req, res) {
-    var reqObject = req.query
-    var position  = reqObject.position
-
-    if(!(position in players)){
-      log.info('Initializing player ' + position)
-      players[position] = {}
-    }
-
-    for(i in reqObject){
-
-      if(i == 'commander' && reqObject[i] != players[position][i]){
-        players[position]['commanderInfo'] = {}
-        players[position]['commander'] = reqObject[i]
-        var commanderName = reqObject[i].replace(' ', '%20')
-        var commander     = getCardInfo(commanderName)
-        if(commander){
-          players[position]['commanderInfo']['multiverseId'] = commander.multiverseid
-          players[position]['commanderInfo']['image'] = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + commander.multiverseid + '&type=card'
-          if(commander.colors != null){
-            players[position]['commanderInfo']['colors'] = commander.colors
-            players[position]['commanderInfo']['manaIcon'] = commander.colors.sort().join('').toLowerCase() + '.png'
-          } else {
-            players[position]['commanderInfo']['colors'] = ["Colorless"]
-            players[position]['commanderInfo']['manaIcon'] = 'none.png'
-          }
-        }
-      }
-      players[position][i] = reqObject[i]
-
-    }
-
-    log.info('Updated player info for ' + position + ': ' + reqObject)
-    res.json(players[position])
-    io.sockets.emit('players', players)
-    if(players[position] != null){
-      player = players[position]
-    } else {
-      player = {
-        'position':position,
-        'life':null,
-        'name':null,
-        'commander':null,
-        'active':null
-      }
-    }
-    db.run("INSERT INTO log(position, life, name, commander) VALUES (?,?,?,?)",
-      position,
-      player.life,
-      player.name,
-      player.commander
-    )
-
-})
-
-//Player leaves action
-app.get('/leave/:position', function(req, res){
-  var newPlayerObject = {}
-  for(i in players){
-    if(req.params.position != players[i].position){
-      newPlayerObject[i] = players[i]
-    }
-  }
-  if(req.params.position == active){
-    active = 0
-  }
-  players = newPlayerObject
-  res.json(players)
-  io.sockets.emit('players', players)
-  log.info('Player ' + req.params.position + ' has left the game!')
-})
-
-//Reset entire gamestate (players, active)
-app.get('/reset', function(req, res) {
-  players = {}
-  active  = 0
-  log.info('Game has been reset!')
-  res.json(players)
-  io.sockets.emit('players', players)
-})
-
-//Look up NFC chip in database, do action based on entry
-app.get('/nfc', function(req, res){
-  console.log(req.query)
-  res.json(req.query)
-   db.each("SELECT * from nfc where tag=?", req.query.tag, function(err, row) {
-      if(row.action == "card"){
-        var card = getCardInfo(row.data)
-        res.json(card)
-        io.sockets.emit('card', card)
-      } else if(row.action == "active") {
-        res.json(row)
-      } else if(row.action == "position") {
-        res.json(row)
-      } else {
-        res.json(req.query)
-        console.log('nfc wut?')
-      }
-  })
-})
-
-//Look up card based on Name or multiverseid
-//Send card event 
-app.get('/card', function(req, res){
-  if(req.query.card){
-    console.log(req.query.card)
-    var card = getCardInfo(req.query.card)
-    res.json({'card':card, 'action':'show'})
-    io.sockets.emit('card', {'card':card, 'action':'show'})
-    cardScreen = {'card':card, 'action':'show'}
-  } else if (req.query.multiverseid){
-    io.sockets.emit('card', {'multiverseid':req.query.multiverseid, 'action':'show'})
-    res.json({'multiverseid':req.query.multiverseid, 'action':'show'})
-    cardScreen = {'multiverseid':req.query.multiverseid, 'action':'show'}
-  } else {
-    io.sockets.emit('card', {'action':'hide'})
-    res.json({'action':'hide'})
-    cardScreen = ""
-  }
-})
-
-//Send on screen message event
-app.get('/message', function(req, res){
-  io.sockets.emit('message', {'message':req.query.message})
-  res.json({'message':req.query.message})
-  msgScreen = req.query.message
-})
-
-//Send active player event
-//Update db with active player
-app.get('/active/update', function(req, res){
-  console.log('Active!')
-  console.log(req.query)
-  active = req.query.position
-  io.sockets.emit('active', {'position':req.query.position})
-  res.json({'position':req.query.position})
-  db.run("INSERT INTO turn_log(position) VALUES (?)",
-    req.query.position
-  )
-})
+app.get('/card/', card.index) // Sends or hides card info
 
 /*
 
-  Websocket event handlers
+  Websocket events
 
 */
 
-//Initial event, does nothing
-io.on('connection', function (socket) {
-  socket.emit('yay', { hello: 'world' })
-  socket.on('my other event', function (data) {
-    console.log(data)
-  })
-})
+io.on('connection', gameSocket.connection)
 
 
 server.listen('9090')

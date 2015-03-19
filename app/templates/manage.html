@@ -64,7 +64,7 @@
     <script type="text/javascript">
     $(document).ready(function(){
       $('#message').blur(function(){
-        $.getJSON('/message', {'message':$(this).val()}, function(data){
+        $.getJSON('/game/message', {'message':$(this).val()}, function(data){
           $('#currentMessage').html(data.message);
         });
       });
@@ -117,11 +117,11 @@
       });
       $('#reset').click(function(){
         if(confirm("You sure you want reset?")){
-          $.getJSON('/reset', function(){ });
+          $.getJSON('/game/reset', function(){ });
         }
       });
       $('#randomPlayer').click(function(){
-        $.getJSON('/random', function(data){
+        $.getJSON('/player/random', function(data){
           $('#randomPlayerName').text(data.name).fadeIn().delay(10000).fadeOut();
         })
       });

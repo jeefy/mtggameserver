@@ -45,11 +45,11 @@ body{background-color: #00ff00;}
 
 <script>
 $(document).ready(function(){
-  {% if message != "" %}
-    $('#message').html('{{message}}');
+  {% if msgScreen != "" %}
+    $('#message').html('{{msgScreen}}');
   {% endif %}
-  {% if card != "" %}
-    $('#card').prop('src', 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid={{card.multiverseid}}&type=card').fadeIn();
+  {% if cardScreen != "" %}
+    $('#card').prop('src', 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid={{cardScreen.multiverseid}}&type=card').fadeIn();
   {% endif %}
 });
 </script>
