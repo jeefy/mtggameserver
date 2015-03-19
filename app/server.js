@@ -5,6 +5,7 @@ var customConfig = {
     showTimestamp: true
 }
 var log = new Logger(customConfig)
+var http_req   = require('sync-request')
 var express    = require('express')
 var app        = require('express')()
 var server     = require('http').Server(app)
@@ -20,7 +21,7 @@ db.run("CREATE TABLE if not exists log(position NUM, life NUM, name TEXT, comman
 db.run("CREATE TABLE if not exists turn_log(position NUM, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)")
 db.run("CREATE UNIQUE INDEX IF NOT EXISTS nfc_tag_idx on nfc(tag)")
 
-
+app.set('http_req', http_req)
 app.set('logger', log)
 app.set('state', {
   players: {},

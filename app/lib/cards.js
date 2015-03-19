@@ -1,7 +1,6 @@
-var http_req   = require('sync-request')
 
-exports.getCardInfo = function (card){
-  var url = 'http://api.mtgapi.com/v2/cards?name=' + card
+exports.getCardInfo = function (card, http_req){
+  var url = 'https://api.mtgapi.com/v2/cards?name=' + card
   var mtgResponse = JSON.parse(http_req('GET', url).getBody())
   if(mtgResponse.cards != null){
     for(i in mtgResponse.cards){

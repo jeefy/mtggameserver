@@ -36,8 +36,8 @@ exports.leave = function(req, res){
     var game = req.app.get('state')
 
     var newPlayerObject = {}
-    for(i in players){
-        if(req.params.position != players[i].position){
+    for(i in game.players){
+        if(req.params.position != game.players[i].position){
             newPlayerObject[i] = players[i]
         }
     }
@@ -69,7 +69,8 @@ exports.update = function(req, res) {
             players[position]['commanderInfo'] = {}
             players[position]['commander'] = reqObject[i]
             var commanderName = reqObject[i].replace(' ', '%20')
-            var commander         = cards.getCardInfo(commanderName)
+            var commander         = cards.getCardInfo(commanderName, req.app.get("http_req"))
+            console.log('Received info!')
             if(commander){
                 players[position]['commanderInfo']['multiverseId'] = commander.multiverseid
                 players[position]['commanderInfo']['image'] = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + commander.multiverseid + '&type=card'
@@ -89,6 +90,7 @@ exports.update = function(req, res) {
     log.info('Updated player info for ' + position + ': ' + reqObject)
     res.json(players[position])
     game.io.sockets.emit('players', players)
+
     if(players[position] != null){
         player = players[position]
     } else {
@@ -108,7 +110,6 @@ exports.update = function(req, res) {
     )
     game.players = players;
     req.app.set('state', game)
-
 }
 
 exports.random = function(req, res){
