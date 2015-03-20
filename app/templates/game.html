@@ -5,7 +5,7 @@
   socket.on('card', function (data) {
     if(data.action == "show"){
       $('#card').fadeOut(function(){
-        $('#card').prop('src', 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid='+data.multiverseid+'&type=card').fadeIn();
+        $('#card').prop('src', 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid='+data.card.multiverseid+'&type=card').fadeIn();
       });  
     }
     if(data.action == "hide"){
@@ -49,7 +49,7 @@ $(document).ready(function(){
     $('#message').html('{{msgScreen}}');
   {% endif %}
   {% if cardScreen != "" %}
-    $('#card').prop('src', 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid={{cardScreen.multiverseid}}&type=card').fadeIn();
+    $('#card').prop('src', 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid={{cardScreen.card.multiverseid}}&type=card').fadeIn();
   {% endif %}
 });
 </script>

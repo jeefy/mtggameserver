@@ -11,9 +11,9 @@ exports.index = function(req, res){
       game.cardScreen = {'card':card, 'action':'show'}
       req.app.set('state', game)
   } else if (req.query.multiverseid){
-      game.io.sockets.emit('card', {'multiverseid':req.query.multiverseid, 'action':'show'})
-      res.json({'multiverseid':req.query.multiverseid, 'action':'show'})
-      game.cardScreen = {'multiverseid':req.query.multiverseid, 'action':'show'}
+      game.io.sockets.emit('card', {'card':{'multiverseid':req.query.multiverseid}, 'action':'show'})
+      res.json({'card':{'multiverseid':req.query.multiverseid}, 'action':'show'})
+      game.cardScreen = {'card':{'multiverseid':req.query.multiverseid}, 'action':'show'}
       req.app.set('state', game)
   } else {
       game.io.sockets.emit('card', {'action':'hide'})
