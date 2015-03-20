@@ -1,5 +1,5 @@
-var cards = require('../lib/cards')
-
+var cards   = require('../lib/cards')
+var players = require('../routes/player.js')
 exports.read = function(req, res){
     var log    = req.app.get('logger')
     var game = req.app.get('state')
@@ -10,9 +10,11 @@ exports.read = function(req, res){
             res.json(card)
             game.io.sockets.emit('card', card)
         } else if(row.action == "active") {
-            res.json(row)
+            req.params.action  = "update"
+            req.query.position = row.data
+            players.active(req, res)
         } else if(row.action == "position") {
-            res.json(row)
+            res.json({'phoneAction':'update', 'data':row})
         } else {
             res.json(req.query)
             console.log('nfc wut?')
