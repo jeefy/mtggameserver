@@ -9,19 +9,23 @@
 * Get wrecked by your friends because your deck sucks
 
 ##Routes?
-| Method  | URI  | Effect  | Example |
-|---|---|---|---|
-| GET  | /player  | Returns all players in JSON  | /player |
-| GET  | /player:position  | Returns player nametag  | /player/1 |
-| GET  | /player:position  | Returns player nametag sideways  | /player/1?rotate=1 (or 2) |
-| GET  | /player:position/json  | Returns player-specific JSON  | /player/1/json |
-| GET  | /game  | Returns game monitor page (Card/message popups)  | /game |
-| GET  | /update  | Updates player information | /update?position=1&name=jeef111x&commander=Sen Triplets&life=40 |
-| GET  | /reset  | Clears all player information  | /reset |
-| GET  | /leave/:position  | Clears player information for specified position  | /leave/1 |
-| GET  | /nfc | Loads NFC Data (eventually!) | /nfc?tag=:uuid |
-| GET  | /manage | Loads card/message entry screen | /manage |
-| GET  | /active/update | Updates current active player | /active/update?position=1 |
-| GET  | /active | Returns current active player | /active |
-| GET  | /message | Sets current on-screen message | /message?message=OH SNAP GURRRL |
 
+| URI | Description | Example |
+|--------|--------|
+| / | By Ajani's Whisker! |
+| /game | Stream game view |
+| /game/manage | Game manager form |
+| /game/reset | Resets current game state |
+| /game/message | Updates on screen message |
+| /game/nfc | Updates on screen message |
+| /player/ | Return all players |
+| /player/get/:position/:view | Return specific player (json or card) |/player/get/1/json
+| /player/active/:action | Look up or update active | /player/active/update?position=1
+| /player/leave/:position | Leave | /player/leave/3
+| /player/random | Get Random player |
+| /player/update | Update player info |
+| /nfc/read | Performs action based on NFC card read | ?tag=uuid
+| /nfc/entry | Sends card ID to entry form | ?tag=uuid
+| /nfc/write | Updates NFC table with info | ?tag=uuid&action=update&data=wut
+| /nfc/lookup | / Just looks up in db | ?tag=uuid
+| /card/ | Sends or hides card info | ?card=cardname or ?multiverseid=1234 |
