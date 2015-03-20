@@ -23,6 +23,22 @@
        -webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px;
      }
     </style>
+    <script>
+      var socket = io.connect();
+      socket.on('card', function (data) {
+        if(data.action == "show"){
+          $('#card').fadeOut(function(){
+            $('#card').prop('src', 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid='+data.multiverseid+'&type=card').fadeIn();
+            $('#cardActions').fadeIn();
+          });  
+        }
+        if(data.action == "hide"){
+          $('#card').fadeOut();
+          $('#cardActions').fadeOut();
+        }
+        
+      });
+    </script>
   </head>
   <body>
     <div align="center">
@@ -125,11 +141,11 @@
           $('#randomPlayerName').text(data.name).fadeIn().delay(10000).fadeOut();
         })
       });
-      {% if message != "" %}
+      {% if msgScreen != "" %}
         $('#currentMessage').html('{{message}}');
         $('#message').val('{{message}}');
       {% endif %}
-      {% if card != "" %}
+      {% if cardScreen != "" %}
         $('#card').prop('rel', '{{card.multiverseid}}').prop('src', 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid={{card.multiverseid}}&type=card').fadeIn();
         $('#cardActions').fadeIn();
       {% endif %}
