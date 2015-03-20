@@ -11,12 +11,11 @@ exports.read = function(req, res){
             game.io.sockets.emit('card', card)
         } else if(row.action == "active") {
             req.params.action  = "update"
-            req.query.position = row.data
             players.active(req, res)
         } else if(row.action == "position") {
             res.json({'phoneAction':'update', 'data':row})
         } else {
-            res.json(req.query)
+            res.json({'error':'Unknown method!','query':req.query})
             console.log('nfc wut?')
         }
     })
