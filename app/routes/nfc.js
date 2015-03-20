@@ -1,12 +1,12 @@
-var cards   = require('../lib/cards')
-var players = require('../routes/player.js')
+var cards = require('../lib/cards')
+var players = require('../routes/player')
 exports.read = function(req, res){
-    var log    = req.app.get('logger')
-    var game = req.app.get('state')
-    res.json(req.query)
+    var log      = req.app.get('logger')
+    var game     = req.app.get('state')
+    var http_req = req.app.get('http_req')
     game.db.each("SELECT * from nfc where tag=?", req.query.tag, function(err, row) {
         if(row.action == "card"){
-            var card = cards.getCardInfo(row.data)
+            var card = cards.getCardInfo(row.data, http_req)
             res.json(card)
             game.io.sockets.emit('card', card)
         } else if(row.action == "active") {

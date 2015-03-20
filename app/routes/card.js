@@ -1,11 +1,11 @@
 var cards = require('../lib/cards')
 
 exports.index = function(req, res){
-  var log  = req.app.get('logger')
-  var game = req.app.get('state')  
+  var log      = req.app.get('logger')
+  var game     = req.app.get('state')
+  var http_req = req.app.get('http_req')
   if(req.query.card){
-      console.log(req.query.card)
-      var card = cards.getCardInfo(req.query.card)
+      var card = cards.getCardInfo(req.query.card, http_req)
       res.json({'card':card, 'action':'show'})
       game.io.sockets.emit('card', {'card':card, 'action':'show'})
       game.cardScreen = {'card':card, 'action':'show'}
