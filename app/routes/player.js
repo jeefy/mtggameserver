@@ -38,7 +38,7 @@ exports.leave = function(req, res){
     var newPlayerObject = {}
     for(i in game.players){
         if(req.params.position != game.players[i].position){
-            newPlayerObject[i] = players[i]
+            newPlayerObject[i] = game.players[i]
         }
     }
     if(req.params.position == game.active){
