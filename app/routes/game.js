@@ -11,18 +11,7 @@ exports.game = function(req, res){
     var log  = req.app.get('logger')
     var game = req.app.get('state')
     state.getGameState(game.db, req.query, function(gameObj){
-        if(gameObj){
-            if('cardScreen' in gameObj){
-                gameObj.cardScreen = JSON.parse(gameObj.cardScreen)
-            }
-        } else {
-            gameObj = {
-                'tableid': req.query.tableid,
-                'cardScreen':'',
-                'msgScreen':'',
-                'active':0
-            }
-        }
+        gameObj.cardScreen = JSON.parse(gameObj.cardScreen)
 
         if("view" in req.query && req.query.view == "json"){
             res.json(gameObj)

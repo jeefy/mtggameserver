@@ -1,23 +1,33 @@
 var cards      = require('../lib/cards')
 var http_req   = require('sync-request')
 
-exports.getGameState = function(db, game, cb){
+exports.getGameState = function(db, gameObj, cb){
     var sql = "SELECT * from game_state where tableid=?"
     //console.log(sql)
-    db.all(sql, game.tableid, function(err, rows) {
-        cb(rows[0], game)
+    db.all(sql, gameObj.tableid, function(err, rows) {
+        if(rows && rows.length == 1){
+            cb(rows[0], gameObj)
+        } else {
+            var newGame = {
+                'tableid': gameObj.tableid,
+                'cardScreen':JSON.stringify({}),
+                'msgScreen':'',
+                'active':0
+            }
+            cb(newGame, gameObj)
+        }
     })
 }
 
-exports.setGameState = function(db, game, cb){
+exports.setGameState = function(db, gameObj, cb){
     var sql = "INSERT OR REPLACE INTO game_state(tableid, active, cardScreen, msgScreen) VALUES (?,?,?,?)"
     //console.log(sql)
     db.run(sql,
-        game.tableid,
-        game.active,
-        game.cardScreen,
-        game.msgScreen,
-        cb(game)
+        gameObj.tableid,
+        gameObj.active,
+        JSON.stringify(gameObj.cardScreen),
+        gameObj.msgScreen,
+        cb(gameObj)
     )
 }
 
@@ -71,8 +81,11 @@ exports.setPlayerState = function(db, player, cb){
         
         if(('commander' in playerObj && playerObj.commander != player.commander) || !('commander' in playerObj)){
             player['commanderInfo'] = {}
-            var commanderName = player.commander.replace(' ', '%20')
-            var commander     = cards.getCardInfo(commanderName, http_req)
+            var commander = false
+            if(player.commander){
+                var commanderName = player.commander.replace(' ', '%20')
+                var commander     = cards.getCardInfo(commanderName, http_req)
+            }
             if(commander){
                 player['commanderInfo']['multiverseId'] = commander.multiverseid
                 player['commanderInfo']['image'] = 'http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=' + commander.multiverseid + '&type=card'

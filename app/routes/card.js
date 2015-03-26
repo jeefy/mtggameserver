@@ -20,7 +20,7 @@ exports.index = function(req, res){
       res.json({'action':'hide'})
       cardScreen = ""
   }
-  state.setGameState(game.db, {'tableid':req.query.tableid, 'cardScreen':JSON.stringify(cardScreen)}, function(gameObj){
+  state.setGameState(game.db, {'tableid':req.query.tableid, 'cardScreen':cardScreen}, function(gameObj){
     console.log("Game updated with cardScreen")
   })
 

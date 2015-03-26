@@ -117,14 +117,6 @@ exports.active = function(req, res){
         })
     } else if(req.query.action == "update"){
         state.getGameState(game.db, req.query, function(gameObj){
-            if(!gameObj){
-                gameObj = {
-                    'tableid': req.query.tableid,
-                    'cardScreen':'',
-                    'msgScreen':'',
-                    'active':req.query.position
-                }
-            }
             state.setGameState(game.db, gameObj, function(newGameObj){
                 game.io.of(req.query.tableid).emit('active', {'position':req.query.position})
                 res.json({'position':req.query.position})
