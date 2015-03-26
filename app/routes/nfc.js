@@ -1,19 +1,24 @@
-var cards = require('../lib/cards')
-var players = require('../routes/player')
+var cards     = require('../lib/cards')
+var cardRoute = require('../routes/card')
+var players   = require('../routes/player')
+
 exports.read = function(req, res){
     var log      = req.app.get('logger')
     var game     = req.app.get('state')
     var http_req = req.app.get('http_req')
     game.db.each("SELECT * from nfc where tag=?", req.query.tag, function(err, row) {
         if(row.action == "card"){
-            var card = cards.getCardInfo(row.data, http_req)
-            res.json(card)
+            req.query.card = row.data
+            cardRoute.index(req, res)
             game.io.sockets.emit('card', card)
         } else if(row.action == "active") {
-            req.params.action  = "update"
+            req.params.action = "update"
+            req.query.tableid = row.data
             players.active(req, res)
         } else if(row.action == "position") {
-            res.json({'phoneAction':'update', 'data':row})
+            var tableid  = row.split('|')[0]
+            var position = row.split('|')[1]
+            res.json({'phoneAction':'update', 'position':position,'tableid':tableid})
         } else {
             res.json({'error':'Unknown method!','query':req.query})
             console.log('nfc wut?')

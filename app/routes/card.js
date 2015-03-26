@@ -1,24 +1,27 @@
 var cards = require('../lib/cards')
+var state = require('../lib/state')
 
 exports.index = function(req, res){
-  var log      = req.app.get('logger')
-  var game     = req.app.get('state')
-  var http_req = req.app.get('http_req')
+  var log        = req.app.get('logger')
+  var game       = req.app.get('state')
+  var http_req   = req.app.get('http_req')
+  var cardScreen = null;
   if(req.query.card){
       var card = cards.getCardInfo(req.query.card, http_req)
       res.json({'card':card, 'action':'show'})
-      game.io.sockets.emit('card', {'card':card, 'action':'show'})
-      game.cardScreen = {'card':card, 'action':'show'}
-      req.app.set('state', game)
+      game.io.of(req.query.tableid).emit('card', {'card':card, 'action':'show'})
+      cardScreen = {'card':card, 'action':'show'}
   } else if (req.query.multiverseid){
-      game.io.sockets.emit('card', {'card':{'multiverseid':req.query.multiverseid}, 'action':'show'})
+      game.io.of(req.query.tableid).emit('card', {'card':{'multiverseid':req.query.multiverseid}, 'action':'show'})
       res.json({'card':{'multiverseid':req.query.multiverseid}, 'action':'show'})
-      game.cardScreen = {'card':{'multiverseid':req.query.multiverseid}, 'action':'show'}
-      req.app.set('state', game)
+      cardScreen = {'card':{'multiverseid':req.query.multiverseid}, 'action':'show'}
   } else {
-      game.io.sockets.emit('card', {'action':'hide'})
+      game.io.of(req.query.tableid).emit('card', {'action':'hide'})
       res.json({'action':'hide'})
-      game.cardScreen = ""
-      req.app.set('state', game)
+      cardScreen = ""
   }
+  state.setGameState(game.db, {'tableid':req.query.tableid, 'cardScreen':JSON.stringify(cardScreen)}, function(gameObj){
+    console.log("Game updated with cardScreen")
+  })
+
 }
