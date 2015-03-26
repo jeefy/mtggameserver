@@ -16,8 +16,8 @@ exports.read = function(req, res){
             req.query.tableid = row.data
             players.active(req, res)
         } else if(row.action == "position") {
-            var tableid  = row.split('|')[0]
-            var position = row.split('|')[1]
+            var tableid  = row.data.split('|')[0]
+            var position = row.data.split('|')[1]
             res.json({'phoneAction':'update', 'position':position,'tableid':tableid})
         } else {
             res.json({'error':'Unknown method!','query':req.query})

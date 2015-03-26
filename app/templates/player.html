@@ -2,7 +2,7 @@
 <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
 <script src="http://aishek.github.io/jquery-animateNumber/javascripts/jquery.animateNumber.js"></script>
 <script>
-  var socket = io.connect('localhost:9090/{{tableid}}');
+  var socket = io.connect('/{{tableid}}');
   socket.on('active', function(data){
     if(data['position'] == "{{position}}"){
       $('td').css('color', '#fff000');
