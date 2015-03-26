@@ -14,7 +14,7 @@ exports.read = function(req, res){
                 cardRoute.index(req, res)
                 game.io.sockets.emit('card', card)
             } else if(row.action == "active") {
-                req.params.action = "update"
+                req.query.action  = "update"
                 req.query.tableid = row.data
                 players.active(req, res)
             } else if(row.action == "position") {
