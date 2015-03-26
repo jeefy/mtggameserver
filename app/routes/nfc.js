@@ -8,6 +8,7 @@ exports.read = function(req, res){
     var http_req = req.app.get('http_req')
     game.db.all("SELECT * from nfc where tag=?", req.query.tag, function(err, rows) {
         if(rows && rows.length > 0){
+            var row = rows[0]
             if(row.action == "card"){
                 req.query.card = row.data
                 cardRoute.index(req, res)
