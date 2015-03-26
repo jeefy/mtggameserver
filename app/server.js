@@ -24,8 +24,8 @@ db.run("CREATE TABLE if not exists game_state(tableid TEXT, active NUM, cardScre
   db.run("CREATE UNIQUE INDEX IF NOT EXISTS game_state_idx on game_state(tableid)")
 })
 db.run("CREATE TABLE if not exists player_state(phoneid TEXT, tableid TEXT, position TEXT, state TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)", function(){
+  db.run("CREATE INDEX IF NOT EXISTS player_state_table on player_state(tableid)")
   db.run("CREATE UNIQUE INDEX IF NOT EXISTS player_state_idx on player_state(phoneid)")
-  db.run("CREATE UNIQUE INDEX IF NOT EXISTS player_state_table on player_state(tableid)")
   db.run("CREATE UNIQUE INDEX IF NOT EXISTS player_state_table_position on player_state(tableid,position)")
 })
 

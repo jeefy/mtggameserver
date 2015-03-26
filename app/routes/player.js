@@ -82,7 +82,9 @@ exports.update = function(req, res) {
             game.io.of(oldPlayer.tableid).emit('players', oldPlayer)
         }
         game.io.of(player.tableid).emit('players', player)
-        game.db.run("INSERT INTO log(position, life, name, commander) VALUES (?,?,?,?)",
+        game.db.run("INSERT INTO log(tableid, phoneid, position, life, name, commander) VALUES (?,?,?,?)",
+            player.tableid,
+            player.phoneid,
             player.position,
             player.life,
             player.name,
