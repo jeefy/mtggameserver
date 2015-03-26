@@ -6,22 +6,27 @@ exports.read = function(req, res){
     var log      = req.app.get('logger')
     var game     = req.app.get('state')
     var http_req = req.app.get('http_req')
-    game.db.each("SELECT * from nfc where tag=?", req.query.tag, function(err, row) {
-        if(row.action == "card"){
-            req.query.card = row.data
-            cardRoute.index(req, res)
-            game.io.sockets.emit('card', card)
-        } else if(row.action == "active") {
-            req.params.action = "update"
-            req.query.tableid = row.data
-            players.active(req, res)
-        } else if(row.action == "position") {
-            var tableid  = row.data.split('|')[0]
-            var position = row.data.split('|')[1]
-            res.json({'phoneAction':'update', 'position':position,'tableid':tableid})
+    game.db.all("SELECT * from nfc where tag=?", req.query.tag, function(err, rows) {
+        if(rows && rows.length > 0){
+            if(row.action == "card"){
+                req.query.card = row.data
+                cardRoute.index(req, res)
+                game.io.sockets.emit('card', card)
+            } else if(row.action == "active") {
+                req.params.action = "update"
+                req.query.tableid = row.data
+                players.active(req, res)
+            } else if(row.action == "position") {
+                var tableid  = row.data.split('|')[0]
+                var position = row.data.split('|')[1]
+                res.json({'phoneAction':'update', 'position':position,'tableid':tableid})
+            } else {
+                res.json({'error':'Unknown method!','query':req.query})
+                console.log('nfc wut?')
+            }
         } else {
-            res.json({'error':'Unknown method!','query':req.query})
-            console.log('nfc wut?')
+            res.json({'error':'Unknown tag!','query':req.query})
+            console.log('nfc huh?')
         }
     })
 }
