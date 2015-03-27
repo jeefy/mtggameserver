@@ -99,8 +99,11 @@ $(document).ready(function(){
   {% if blank %}
   $('#card').hide();
   {% endif %}
-  {% if active == position %}
-  $('td').css('color', '#fff000');
-  {% endif %}
+  $.getJSON('/player/active?action=get&tableid={{tableid}}', function(data){
+    if(data.position == '{{position}}'){
+      $('td').css('color', '#fff000');
+    }
+  });
+  
 });
 </script>
