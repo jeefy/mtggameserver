@@ -13,7 +13,7 @@
     if($('.dataRow[rel="'+data.position+'"]').length != 1){
       refreshTable();
     } else {
-      if(data.action == "update"){
+      if(data.action != "leave"){
         $('.dataRow[rel="'+data.position+'"] > td').each(function(){
           var it = $(this).attr('class');
           $(this).text(data[it]);
