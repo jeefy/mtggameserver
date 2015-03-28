@@ -51,14 +51,14 @@ local#commanderName{ font-size: 16px; text-transform: capitalize;}
 <script>
 function refreshTable(){
   $.getJSON('/player/get?tableid={{tableid}}', function(data){
-    $('#players > .dataRow').remove();
+    $('.dataRow').remove();
     for(i in data){
       var html = '';
       html += '<tr class="dataRow" rel="'+data[i].position+'">';
       html += '  <td class="position">' + data[i].position + '</td>';
       html += '  <td class="name">' + data[i].name + '</td>';
       html += '  <td class="commander">' + data[i].commander + '</td>';
-      html += '  <td class="commander">' + data[i].phoneid + '</td>';
+      html += '  <td class="phoneid">' + data[i].phoneid + '</td>';
       html += '  <td class="life">' + data[i].life + '</td>';
       html += '</tr>';
       $('#players').append(html);
