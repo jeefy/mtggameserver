@@ -27,7 +27,7 @@
 </script>
 <link href='http://fonts.googleapis.com/css?family=Josefin+Sans:700italic' rel='stylesheet' type='text/css'>
 <style>
-body, td{ font-family: 'Josefin Sans', sans-serif;}
+body, td{ font-family: 'Josefin Sans', sans-serif; text-align: center;}
 local#commanderName{ font-size: 16px; text-transform: capitalize;}
 #lifeTotal{ font-size: 30px; text-align: right; padding-right: 10px; }
 #colorWheel{ width: 50px;}
@@ -38,17 +38,34 @@ local#commanderName{ font-size: 16px; text-transform: capitalize;}
      background:black;
 }
 .highlight > td{font-weight: bold; color: blue;}
+#playerLog{display: none;}
+table{border: 1px black solid;}
 </style>
-<table id="players" width="600">
-  <tr>
-    <th>Position</th>
-    <th>Player</th>
-    <th>Commander</th>
-    <th>Phone ID</th>
-    <th>Life</th>
-  </tr>
-</table>
-<table id="log" width="600"></table>
+<div align="center">
+  <h3>Table Monitor</h3>
+  <table id="players" width="600">
+    <tr>
+      <th>Position</th>
+      <th>Player</th>
+      <th>Commander</th>
+      <th>Phone ID</th>
+      <th>Life</th>
+    </tr>
+  </table>
+  <div id="playerLog">
+    <h3>Player Log</h3>
+    <table id="log" width="800">
+      <tr>
+        <th>Table</th>
+        <th>Position</th>
+        <th>Name</th>
+        <th>Commander</th>
+        <th>Life</th>
+        <th>Timestamp</th>
+      </tr>
+    </table>
+  </div>
+</div>
 <script>
 function refreshTable(){
   $.getJSON('/player/get?tableid={{tableid}}', function(data){
@@ -81,6 +98,7 @@ function refreshTable(){
             html += '</tr>';
           }
           $('#log').append(html);
+          $('#playerLog').show();
         });
       })
     }
