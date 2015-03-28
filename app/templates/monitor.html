@@ -27,6 +27,7 @@
   });
 </script>
 <link href='http://fonts.googleapis.com/css?family=Josefin+Sans:700italic' rel='stylesheet' type='text/css'>
+<link href='https://raw.githubusercontent.com/mozilla/metrics-graphics/master/dist/metricsgraphics.css' rel='stylesheet' type='text/css'>
 <style>
 body, td{ font-family: 'Josefin Sans', sans-serif; text-align: center;}
 local#commanderName{ font-size: 16px; text-transform: capitalize;}
@@ -86,39 +87,42 @@ function refreshTable(){
         $('.dataRow[rel="' + data.position + '"]').addClass("highlight");
       });
       $('.phoneid > a').off('click').click(function(){
-        $.getJSON('/user/?phoneid=' + $(this).text(), function(data){
+        $.getJSON('/user/?phoneid=' + $(this).text(), function(data2){
+          console.log(data);
           $('.lifeChart').children().remove();
           $('.lifeChart').append('<div id="lifeMetrics"></div>');
-          for(i in data){
-            data[i].time_formatted = new Date(data[i].timestamp).getTime();
+          for(i in data2){
+            data2[i].time_formatted = new Date(data2[i].timestamp).getTime();
           }
           
           MG.data_graphic({
             title: "Life Total",
             description: "Player's historic life total",
-            data: data,
-            width: 400,
+            data: data2,
+            width: 800,
             height: 250,
             target: "#lifeMetrics",
-            x_accessor: "time_formatted",
+            x_accessor: 'time_formatted',
             y_accessor: "life",
+            max_y: 99,
             xax_format: function(f){
-              var d = new Date(f).getDate();
-              return d;
+              return d3.time.format('%X')(new Date(f))
             },
             interpolate: "monotone"
           });
           $('.userRow').remove();
           var html = '';
-          for(i in data){
-            html += '<tr class="userRow">';
-            html += '<td>' + data[i]['tableid'] + '</td>';
-            html += '<td>' + data[i]['position'] + '</td>';
-            html += '<td>' + data[i]['name'] + '</td>';
-            html += '<td>' + data[i]['commander'] + '</td>';
-            html += '<td>' + data[i]['life'] + '</td>';
-            html += '<td>' + data[i]['timestamp'] + '</td>';
-            html += '</tr>';
+          for(i in data2){
+            if(data2[i].life){
+              html += '<tr class="userRow">';
+              html += '<td>' + data2[i]['tableid'] + '</td>';
+              html += '<td>' + data2[i]['position'] + '</td>';
+              html += '<td>' + data2[i]['name'] + '</td>';
+              html += '<td>' + data2[i]['commander'] + '</td>';
+              html += '<td>' + data2[i]['life'] + '</td>';
+              html += '<td>' + data2[i]['timestamp'] + '</td>';
+              html += '</tr>';
+            }
           }
           $('#log').append(html);
           $('#playerLog').show();
