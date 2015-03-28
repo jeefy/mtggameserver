@@ -42,12 +42,12 @@
         if(!$('#card').is(':visible')){
             $('#card').fadeIn();
         }
-    } elseif('{{position}}' == data.position && data.action == "leave"){
+    } else if('{{position}}' == data.position && data.action == "leave"){
       if($('#card').is(':visible')){
           $('#card').fadeOut();
       }
     }
-    
+
   });
 </script>
 <link href='http://fonts.googleapis.com/css?family=Josefin+Sans:700italic' rel='stylesheet' type='text/css'>
