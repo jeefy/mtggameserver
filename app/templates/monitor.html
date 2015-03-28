@@ -48,6 +48,7 @@ local#commanderName{ font-size: 16px; text-transform: capitalize;}
     <th>Life</th>
   </tr>
 </table>
+<table id="log" width="600"></table>
 <script>
 function refreshTable(){
   $.getJSON('/player/get?tableid={{tableid}}', function(data){
@@ -58,12 +59,29 @@ function refreshTable(){
       html += '  <td class="position">' + data[i].position + '</td>';
       html += '  <td class="name">' + data[i].name + '</td>';
       html += '  <td class="commander">' + data[i].commander + '</td>';
-      html += '  <td class="phoneid">' + data[i].phoneid + '</td>';
+      html += '  <td class="phoneid"><a href="#">' + data[i].phoneid + '</a></td>';
       html += '  <td class="life">' + data[i].life + '</td>';
       html += '</tr>';
       $('#players').append(html);
       $.getJSON('/player/active?action=get&tableid={{tableid}}', function(data){
         $('.dataRow[rel="' + data.position + '"]').addClass("highlight");
+      })
+      $('.phoneid > a').die('click').click(function(){
+        $.getJSON('/user/?phoneid=' + $(this).text(), function(data){
+          $('.userRow').remove();
+          var html = '';
+          for(i in data){
+            html += '<tr class="userRow">';
+            html += '<td>' + data[i]['tableid'] + '</td>';
+            html += '<td>' + data[i]['position'] + '</td>';
+            html += '<td>' + data[i]['name'] + '</td>';
+            html += '<td>' + data[i]['commander'] + '</td>';
+            html += '<td>' + data[i]['life'] + '</td>';
+            html += '<td>' + data[i]['timestamp'] + '</td>';
+            html += '</tr>';
+          }
+          $('#log').append(html);
+        });
       })
     }
   });

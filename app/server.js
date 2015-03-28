@@ -44,6 +44,7 @@ var game       = require('./routes/game')
 var card       = require('./routes/card')
 var player     = require('./routes/player')
 var nfc        = require('./routes/nfc')
+var user       = require('./routes/user')
 var gameSocket = require('./routes/socket')
 
 app.use(bodyParser.json()) 
@@ -86,6 +87,8 @@ app.get('/nfc/write', nfc.write) // Updates NFC table with info
 app.get('/nfc/lookup', nfc.lookup) // Just looks up in db
 
 app.get('/card/', card.index) // Sends or hides card info
+
+app.get('/user/', user.index) // Return JSON log of player actions
 
 /*
 
