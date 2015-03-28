@@ -65,8 +65,8 @@ function refreshTable(){
       $('#players').append(html);
       $.getJSON('/player/active?action=get&tableid={{tableid}}', function(data){
         $('.dataRow[rel="' + data.position + '"]').addClass("highlight");
-      })
-      $('.phoneid > a').die('click').click(function(){
+      });
+      $('.phoneid > a').off('click').click(function(){
         $.getJSON('/user/?phoneid=' + $(this).text(), function(data){
           $('.userRow').remove();
           var html = '';
