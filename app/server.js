@@ -66,6 +66,7 @@ app.use('/static', express.static(__dirname + '/static'))
 
 app.get('/', game.index) // By Ajani's Whisker!
 app.get('/game/', game.game) // Stream game view
+app.get('/game/monitor', game.monitor) // Real time game stats
 app.get('/game/manage', game.manage) // Game manager form
 app.get('/game/reset', game.reset) // Resets current game state
 app.get('/game/message', game.message) // Updates on screen message

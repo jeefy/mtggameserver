@@ -7,6 +7,13 @@ exports.index = function(req, res){
     res.render('index')
 }
 
+exports.monitor = function(req, res){
+    var log  = req.app.get('logger')
+    var game = req.app.get('state')
+    log.info('Viewing index')
+    res.render('monitor', req.query)
+}
+
 exports.game = function(req, res){
     var log  = req.app.get('logger')
     var game = req.app.get('state')
