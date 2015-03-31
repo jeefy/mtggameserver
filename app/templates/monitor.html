@@ -104,7 +104,7 @@ function refreshTable(){
             target: "#lifeMetrics",
             x_accessor: 'time_formatted',
             y_accessor: "life",
-            max_y: 99,
+            y_scale_type: "log",
             xax_format: function(f){
               return d3.time.format('%X')(new Date(f))
             },
