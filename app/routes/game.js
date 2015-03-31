@@ -70,3 +70,11 @@ exports.message = function(req, res){
         res.json({'message':gameObj.msgScreen})
     })
 }
+
+exports.new = function(req, res){
+    res.json({'test':'new stubbed out'})
+}
+
+exports.end = function(req, res){
+    res.json({'test':'end stubbed out'})
+}

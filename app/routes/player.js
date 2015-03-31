@@ -104,6 +104,10 @@ exports.random = function(req, res){
     })
 }
 
+exports.dead = function(req, res){
+    res.json({'test':'dead stubbed out'})
+}
+
 exports.active = function(req, res){
     var log  = req.app.get('logger')
     var game = req.app.get('state')
