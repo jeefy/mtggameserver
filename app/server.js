@@ -88,6 +88,7 @@ app.get('/game/message', game.message) // Updates on screen message
 app.get('/game/nfc', game.nfc) // Updates on screen message
 app.get('/game/new', game.new) // Inserts game start into log
 app.get('/game/end', game.end) // Inserts game end into log
+app.get('/game/history', game.history) // Get game history for a phoneid (limit 30)
 
 //app.get('/player/get/?', player.index) // Return all players for a table
 app.get('/player/get', player.get) // Return specific player (?view=json or ?view=card)

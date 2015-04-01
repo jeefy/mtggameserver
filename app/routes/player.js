@@ -140,7 +140,7 @@ exports.active = function(req, res){
 
     if(req.query.action == "get"){
         state.getGameState(game.db, req.query, function(game){
-            log.info('Getting active player at table ' + requ.query.tableid)
+            log.info('Getting active player at table ' + req.query.tableid)
             if(game){
                 res.json({'position':game['active']})    
             } else {

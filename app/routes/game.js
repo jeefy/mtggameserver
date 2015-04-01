@@ -98,3 +98,19 @@ exports.end = function(req, res){
         res.json(event)
     })
 }
+
+exports.history = function(req, res){
+    var log  = req.app.get('logger')
+    var game = req.app.get('state')
+
+    if('phoneid' in req.query) {
+        var sql = "select * from events where event in ('newGame', 'endGame') and phoneid=? order by timestamp asc limit 30"
+        log.info('Query: ' + sql)
+        game.db.all(sql, req.query.phoneid, function(err, rows){
+            res.json(rows)
+        })
+    } else {
+        res.json({'error':'phoneid required'})
+    }
+
+}

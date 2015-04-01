@@ -56,6 +56,9 @@ table{border: 1px black solid;}
   </table>
   <div id="playerLog">
     <h3>Player Log</h3>
+    <select id="gameHistory">
+      <option></option>
+    </select>
     <div class="lifeChart"></div>
     <table id="log" width="800">
       <tr>
@@ -83,52 +86,81 @@ function refreshTable(){
       html += '  <td class="life">' + data[i].life + '</td>';
       html += '</tr>';
       $('#players').append(html);
-      $.getJSON('/player/active?action=get&tableid={{tableid}}', function(data){
-        $('.dataRow[rel="' + data.position + '"]').addClass("highlight");
+      $.getJSON('/player/active?action=get&tableid={{tableid}}', function(data2){
+        $('.dataRow[rel="' + data2.position + '"]').addClass("highlight");
       });
       $('.phoneid > a').off('click').click(function(){
-        $.getJSON('/user/?phoneid=' + $(this).text(), function(data2){
-          console.log(data);
-          $('.lifeChart').children().remove();
-          $('.lifeChart').append('<div id="lifeMetrics"></div>');
+        $.getJSON('/game/history', {'phoneid':$(this).text()}, function(data2){
+          $('#gameHistory').children().remove();
+          $('#gameHistory').append('<option></option>');
           for(i in data2){
-            data2[i].time_formatted = new Date(data2[i].timestamp).getTime();
-          }
-          
-          MG.data_graphic({
-            title: "Life Total",
-            description: "Player's historic life total",
-            data: data2,
-            width: 800,
-            height: 250,
-            target: "#lifeMetrics",
-            x_accessor: 'time_formatted',
-            y_accessor: "life",
-            y_scale_type: "log",
-            xax_format: function(f){
-              return d3.time.format('%X')(new Date(f))
-            },
-            interpolate: "monotone"
-          });
-          $('.userRow').remove();
-          var html = '';
-          for(i in data2){
-            if(data2[i].life){
-              html += '<tr class="userRow">';
-              html += '<td>' + data2[i]['tableid'] + '</td>';
-              html += '<td>' + data2[i]['position'] + '</td>';
-              html += '<td>' + data2[i]['name'] + '</td>';
-              html += '<td>' + data2[i]['commander'] + '</td>';
-              html += '<td>' + data2[i]['life'] + '</td>';
-              html += '<td>' + data2[i]['timestamp'] + '</td>';
-              html += '</tr>';
+            if(data2[i].event == "newGame"){
+              if($('#gameHistory > option:last') && $('#gameHistory > option:last').val().split('|').length < 3){
+                if($('#gameHistory > option:last').text() != ""){
+                  var value = $('#gameHistory > option:last').val() + '|' + data2[i].timestamp;
+                  $('#gameHistory > option:last').attr('value', value);
+                  $('#gameHistory > option:last').text(value);
+                }
+              }
+              var value = data2[i].phoneid + '|' + data2[i].timestamp
+              $('#gameHistory').append('<option rel="'+i+'" value="'+value+'">'+value+'</option>');
+            } else if(data2[i].event == "endGame"){
+              if($('#gameHistory > option:last').text() != ""){
+                var value = $('#gameHistory > option:last').val() + '|' + data2[i].timestamp;
+                $('#gameHistory > option:last').attr('value', value);
+                $('#gameHistory > option:last').text(value);
+              }
             }
           }
-          $('#log').append(html);
-          $('#playerLog').show();
         });
-      })
+        $('#playerLog').show();
+      });
     }
+  });
+  $('#gameHistory').change(function(){
+    var args = $(this).val();
+    var phoneid = args.split('|')[0]
+    var sdate   = args.split('|')[1]
+    var edate   = args.split('|')[2]
+    $.getJSON('/user/', {'phoneid':phoneid,'sdate':sdate,'edate':edate}, function(data2){
+      console.log(data);
+      $('.lifeChart').children().remove();
+      $('.lifeChart').append('<div id="lifeMetrics"></div>');
+      for(i in data2){
+        data2[i].time_formatted = new Date(data2[i].timestamp).getTime();
+      }
+      
+      MG.data_graphic({
+        title: "Life Total",
+        description: "Player's historic life total",
+        data: data2,
+        width: 800,
+        height: 250,
+        target: "#lifeMetrics",
+        x_accessor: 'time_formatted',
+        y_accessor: "life",
+        y_scale_type: "log",
+        xax_format: function(f){
+          return d3.time.format('%X')(new Date(f))
+        },
+        interpolate: "monotone"
+      });
+      $('.userRow').remove();
+      var html = '';
+      for(i in data2){
+        if(data2[i].life){
+          html += '<tr class="userRow">';
+          html += '<td>' + data2[i]['tableid'] + '</td>';
+          html += '<td>' + data2[i]['position'] + '</td>';
+          html += '<td>' + data2[i]['name'] + '</td>';
+          html += '<td>' + data2[i]['commander'] + '</td>';
+          html += '<td>' + data2[i]['life'] + '</td>';
+          html += '<td>' + data2[i]['timestamp'] + '</td>';
+          html += '</tr>';
+        }
+      }
+      $('#log').append(html);
+    });
   });
 }
 $(document).ready(function(){

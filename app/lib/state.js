@@ -141,12 +141,41 @@ exports.getEvents = function(db, event, cb){
     sql = sql.substr(0, sql.length - 4) + ';'
     //console.log(sql)
     db.all(sql, event, function(err, rows) {
-        if(rows.length == 1){
-            cb(rows[0], event)
-        } else if(rows.length > 1){
+        if(rows.length >= 1){
             cb(rows, event)
         } else {
             cb(false, event)
+        }
+    })
+}
+
+exports.getLogs = function(db, log, cb){
+    var sql = "SELECT * from log where "
+    var values = Array();
+    for(i in log){
+        if(i == "sdate"){
+            sql += "timestamp >= ? and "
+        } else if(i == "edate"){
+            sql += "timestamp <= ? and "
+        } else {
+            sql += i + "=? and "
+        }
+        values.push(log[i]);
+    }
+    sql = sql.substr(0, sql.length - 4) + ';'
+    console.log(sql)
+    db.all(sql, values, function(err, rows) {
+        if(err){
+            console.log(err);
+        }
+        if(rows){
+            if(rows.length >= 1){
+                cb(rows, log)
+            } else {
+                cb(false, log)
+            }
+        } else {
+            cb(false, log)
         }
     })
 }
