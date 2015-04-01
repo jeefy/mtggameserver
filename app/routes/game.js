@@ -65,16 +65,36 @@ exports.message = function(req, res){
     var log  = req.app.get('logger')
     var game = req.app.get('state')
     state.setGameState(game.db, req.query, function(gameObj){
-        console.log(gameObj)
+        log.info('Setting game message on table ' + gameObj.tableid)
         game.io.of(gameObj.tableid).emit('message', {'message':gameObj.msgScreen})
         res.json({'message':gameObj.msgScreen})
     })
 }
 
 exports.new = function(req, res){
-    res.json({'test':'new stubbed out'})
+    var log  = req.app.get('logger')
+    var game = req.app.get('state')
+
+    req.query.event = "newGame"
+    req.query.data  = ""
+    state.saveEvent(game.db, req.query, function(event){
+        log.info('New game created at table ' + event.tableid)
+        game.io.of(event.tableid).emit('newGame', event)
+        game.io.of('events').emit('newGame', event)
+        res.json(event)
+    })
 }
 
 exports.end = function(req, res){
-    res.json({'test':'end stubbed out'})
+    var log  = req.app.get('logger')
+    var game = req.app.get('state')
+
+    req.query.event = "endGame"
+    req.query.data  = ""
+    state.saveEvent(game.db, req.query, function(event){
+        log.info('Game ended at table ' + event.tableid)
+        game.io.of(event.tableid).emit('endGame', event)
+        game.io.of('events').emit('endGame', event)
+        res.json(event)
+    })
 }

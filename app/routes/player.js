@@ -68,8 +68,19 @@ exports.leave = function(req, res){
                 game.io.of(req.query.tableid).emit('players', player)
                 log.info('Player ' + player.position + ' has left the game at table ' + player.tableid + '!')
             })
+            state.saveEvent(game.db, {
+                'phoneid':req.query.phoneid,
+                'tableid':req.query.tableid,
+                'event':'leave',
+                'data':player.position
+            }, function(event){
+                game.io.of(event.tableid).emit('leave', event)
+                game.io.of('events').emit('leave', event)
+                res.json(event)
+            })
         }
     })
+
 }
 
 exports.update = function(req, res) {
@@ -99,13 +110,28 @@ exports.random = function(req, res){
     var game   = req.app.get('state')
 
     game.db.all("select * from player_state where tableid=? order by RANDOM() LIMIT 1;", req.query.tableid, function(data){
+        log.info('Got random player at table ' + req.query.tableid + ': ' + data[0]['name'])
         game.io.of(req.query.tableid).emit('gameMessage', {'message': data[0]['name']})
         res.json(data[0])
     })
 }
 
 exports.dead = function(req, res){
-    res.json({'test':'dead stubbed out'})
+    var log  = req.app.get('logger')
+    var game = req.app.get('state')
+
+    state.getPlayerState(game.db, {'phoneid':req.query.phoneid}, function(player){
+        req.query.event = "death"
+        req.query.data  = player.position
+        state.setPlayerState(game.db, {'phoneid':req.query.phoneid,'life':0}, function(player, oldPlayer){
+            state.saveEvent(game.db, req.query, function(event){
+                log.info('Player died (' + req.query.phoneid + ')')
+                game.io.of(event.tableid).emit('death', event)
+                game.io.of('events').emit('death', event)
+                res.json(event)
+            })
+        })
+    })
 }
 
 exports.active = function(req, res){
@@ -114,6 +140,7 @@ exports.active = function(req, res){
 
     if(req.query.action == "get"){
         state.getGameState(game.db, req.query, function(game){
+            log.info('Getting active player at table ' + requ.query.tableid)
             if(game){
                 res.json({'position':game['active']})    
             } else {
@@ -124,9 +151,20 @@ exports.active = function(req, res){
     } else if(req.query.action == "update"){
         state.getGameState(game.db, req.query, function(gameObj){
             state.setGameState(game.db, gameObj, function(newGameObj){
+                log.info('Updating active player at table ' + req.query.tableid + ' to ' + req.query.position)
                 game.io.of(req.query.tableid).emit('active', {'position':req.query.position})
                 res.json({'position':req.query.position})
             })
+        })
+        state.saveEvent(game.db, {
+            'phoneid':req.query.phoneid,
+            'tableid':req.query.tableid,
+            'event':'turn',
+            'data':req.query.position
+        }, function(event){
+            game.io.of(event.tableid).emit('death', event)
+            game.io.of('events').emit('death', event)
+            res.json(event)
         })
     } else {
         res.json({'error':'Invalid call'})

@@ -22,16 +22,16 @@ db.run("CREATE TABLE if not exists nfc(tag TEXT, data TEXT, action TEXT)", funct
 db.run("CREATE TABLE if not exists log(tableid TEXT, phoneid TEXT,  position  NUM, life NUM, name TEXT, commander TEXT, active NUM, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)")
 db.run("CREATE TABLE if not exists game_state(tableid TEXT, active NUM, cardScreen TEXT, msgScreen  TEXT, timestamp  DATETIME DEFAULT CURRENT_TIMESTAMP)", function(){
   db.run("CREATE UNIQUE INDEX IF NOT EXISTS game_state_idx on game_state(tableid)")
-  db.run("CREATE UNIQUE INDEX IF NOT EXISTS game_state_timestamp on game_state(timestamp)")
-  db.run("CREATE UNIQUE INDEX IF NOT EXISTS game_state_timetable on game_state(tableid,timestamp)")
+  db.run("CREATE INDEX IF NOT EXISTS game_state_timestamp on game_state(timestamp)")
+  db.run("CREATE INDEX IF NOT EXISTS game_state_timetable on game_state(tableid,timestamp)")
 })
 db.run("CREATE TABLE if not exists events(phoneid TEXT, tableid TEXT, event TEXT, data TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)", function(){
-  db.run("CREATE UNIQUE INDEX IF NOT EXISTS events_idx_phoneid on events(phoneid)")
-  db.run("CREATE UNIQUE INDEX IF NOT EXISTS events_idx_tableid on events(tableid)")
-  db.run("CREATE UNIQUE INDEX IF NOT EXISTS events_idx_timestamp on events(timestamp)")
-  db.run("CREATE UNIQUE INDEX IF NOT EXISTS events_idx_phoneid_time on events(phoneid,timestamp)")
-  db.run("CREATE UNIQUE INDEX IF NOT EXISTS events_idx_tableid_time on events(tableid,timestamp)")
-  db.run("CREATE UNIQUE INDEX IF NOT EXISTS events_idx_tableid_phoneid_time on events(tableid,phoneid,timestamp)")
+  db.run("CREATE INDEX IF NOT EXISTS events_idx_phoneid on events(phoneid)")
+  db.run("CREATE INDEX IF NOT EXISTS events_idx_tableid on events(tableid)")
+  db.run("CREATE INDEX IF NOT EXISTS events_idx_timestamp on events(timestamp)")
+  db.run("CREATE INDEX IF NOT EXISTS events_idx_phoneid_time on events(phoneid,timestamp)")
+  db.run("CREATE INDEX IF NOT EXISTS events_idx_tableid_time on events(tableid,timestamp)")
+  db.run("CREATE INDEX IF NOT EXISTS events_idx_tableid_phoneid_time on events(tableid,phoneid,timestamp)")
 })
 
 db.run("CREATE TABLE if not exists player_state(phoneid TEXT, tableid TEXT, position TEXT, state TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)", function(){

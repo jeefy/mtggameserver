@@ -115,6 +115,42 @@ exports.setPlayerState = function(db, player, cb){
     })
 }
 
+//phoneid TEXT, tableid TEXT, event TEXT, data TEXT, timestamp DATETIME
+exports.saveEvent = function(db, event, cb){
+    var sql = "INSERT INTO events(phoneid, tableid, event, data) values(?, ?, ?, ?);";
+    db.run(sql, 
+        event.phoneid,
+        event.tableid,
+        event.event,
+        event.data,
+        cb(event)
+    )
+}
+
+exports.getEvents = function(db, event, cb){
+    var sql = "SELECT * from events where "
+    for(i in event){
+        if(i == "stime"){
+            sql += "timestamp >= ? and "
+        } else if(i == "etime"){
+            sql += "timestamp <= ? and "
+        } else {
+            sql += i + "=? and "
+        }
+    }
+    sql = sql.substr(0, sql.length - 4) + ';'
+    //console.log(sql)
+    db.all(sql, event, function(err, rows) {
+        if(rows.length == 1){
+            cb(rows[0], event)
+        } else if(rows.length > 1){
+            cb(rows, event)
+        } else {
+            cb(false, event)
+        }
+    })
+}
+
 exports.convertPlayerArray = function(players, cb){
     var PlayersObj = {}
     for(i in players){
