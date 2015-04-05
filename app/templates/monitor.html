@@ -123,7 +123,7 @@ function refreshTable(){
     var sdate   = args.split('|')[1]
     var edate   = args.split('|')[2]
     $.getJSON('/user/', {'phoneid':phoneid,'sdate':sdate,'edate':edate}, function(data2){
-      console.log(data);
+      console.log(data2);
       $('.lifeChart').children().remove();
       $('.lifeChart').append('<div id="lifeMetrics"></div>');
       for(i in data2){
